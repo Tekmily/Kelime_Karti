@@ -243,6 +243,7 @@
         } = LucideReact;
         const { motion, AnimatePresence } = Motion;
         const { create } = zustand;
+        const { persist } = zustand.middleware;
         
         // Google GenAI Global fallback or Fetch-based implementation
         let GoogleGenAI = window.googleGenAI ? window.googleGenAI.GoogleGenAI : null;
@@ -433,168 +434,83 @@
         // --- STORE ---
         const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
-        // --- SYSTEM DICTIONARY (Optimized for 10,000+ words) ---
-        // By storing only base strings in memory and enriching them via AI/Mock on demand,
-        // we keep the application extremely fast and lightweight.
-        const SYSTEM_DICTIONARY = {
-            A1: ['hello', 'goodbye', 'water', 'food', 'house', 'cat', 'dog', 'book', 'pen', 'sun', 'moon', 'car', 'bus', 'train', 'apple', 'bread', 'milk', 'boy', 'girl', 'man', 'woman', 'day', 'night', 'morning', 'evening', 'friend', 'family', 'mother', 'father', 'sister', 'brother', 'time', 'year', 'week', 'month', 'today', 'tomorrow', 'yesterday', 'hour', 'minute', 'second', 'name', 'city', 'country', 'world', 'school', 'student', 'teacher', 'work', 'job', 'room', 'door', 'window', 'table', 'chair', 'bed', 'phone', 'computer', 'money', 'bag', 'shoe', 'shirt', 'color', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'big', 'small', 'hot', 'cold', 'good', 'bad', 'happy', 'sad', 'beautiful', 'ugly', 'fast', 'slow', 'new', 'old', 'young', 'right', 'wrong', 'true', 'false', 'yes', 'no', 'please', 'thanks', 'sorry', 'excuse', 'help', 'love', 'hate', 'like', 'want', 'need'],
-            A2: ['journey', 'experience', 'weather', 'restaurant', 'airport', 'hospital', 'medicine', 'doctor', 'nurse', 'police', 'bank', 'shop', 'clothes', 'animal', 'bird', 'fish', 'tree', 'flower', 'mountain', 'river', 'sea', 'beach', 'music', 'movie', 'art', 'game', 'sport', 'football', 'basketball', 'tennis', 'swimming', 'running', 'walking', 'sleeping', 'eating', 'drinking', 'reading', 'writing', 'speaking', 'listening', 'learning', 'teaching', 'playing', 'working', 'traveling', 'driving', 'flying', 'buying', 'selling', 'paying', 'cost', 'price', 'cheap', 'expensive', 'free', 'open', 'closed', 'early', 'late', 'first', 'last', 'next', 'previous', 'easy', 'difficult', 'simple', 'complex', 'safe', 'dangerous', 'clean', 'dirty', 'empty', 'full', 'heavy', 'light', 'strong', 'weak', 'rich', 'poor', 'healthy', 'sick', 'tired', 'hungry', 'thirsty', 'angry', 'surprised', 'scared', 'bored', 'excited', 'interesting', 'boring', 'fun', 'funny', 'serious'],
-            B1: ['environment', 'technology', 'society', 'culture', 'economy', 'politics', 'education', 'science', 'history', 'geography', 'literature', 'philosophy', 'psychology', 'sociology', 'biology', 'chemistry', 'physics', 'mathematics', 'computer', 'internet', 'software', 'hardware', 'network', 'database', 'algorithm', 'programming', 'language', 'communication', 'information', 'knowledge', 'understanding', 'research', 'analysis', 'synthesis', 'evaluation', 'application', 'theory', 'practice', 'method', 'technique', 'tool', 'instrument', 'device', 'machine', 'engine', 'vehicle', 'transportation', 'infrastructure', 'industry', 'agriculture', 'business', 'company', 'market', 'product', 'service', 'customer', 'client', 'employee', 'employer', 'manager', 'director', 'office', 'factory', 'store', 'shop', 'mall', 'supermarket', 'restaurant', 'cafe', 'bar', 'hotel', 'apartment', 'house', 'building', 'street', 'road', 'highway', 'bridge', 'tunnel', 'park', 'garden', 'forest', 'jungle', 'desert', 'island', 'continent', 'planet', 'star', 'galaxy', 'universe', 'space', 'time', 'energy', 'matter', 'force', 'motion', 'speed', 'velocity', 'acceleration', 'gravity'],
-            B2: ['sustainable', 'innovative', 'comprehensive', 'fundamental', 'significant', 'crucial', 'essential', 'vital', 'important', 'necessary', 'relevant', 'appropriate', 'suitable', 'adequate', 'sufficient', 'effective', 'efficient', 'productive', 'successful', 'beneficial', 'advantageous', 'valuable', 'precious', 'unique', 'rare', 'common', 'frequent', 'regular', 'normal', 'typical', 'standard', 'average', 'ordinary', 'usual', 'customary', 'traditional', 'conventional', 'orthodox', 'classic', 'modern', 'contemporary', 'recent', 'current', 'present', 'future', 'past', 'historical', 'ancient', 'old', 'new', 'novel', 'original', 'creative', 'imaginative', 'inventive', 'ingenious', 'clever', 'smart', 'intelligent', 'brilliant', 'genius', 'wise', 'foolish', 'stupid', 'silly', 'ridiculous', 'absurd', 'crazy', 'insane', 'mad', 'angry', 'furious', 'enraged', 'calm', 'peaceful', 'tranquil', 'serene', 'quiet', 'silent', 'loud', 'noisy', 'deafening', 'bright', 'dark', 'dim', 'faint', 'clear', 'obscure', 'vague', 'ambiguous', 'transparent', 'opaque', 'solid', 'liquid', 'gas', 'plasma'],
-            C1: ['ubiquitous', 'ephemeral', 'paradigm', 'dichotomy', 'synergy', 'catalyst', 'pragmatic', 'empirical', 'heuristic', 'eclectic', 'esoteric', 'profound', 'subtle', 'nuanced', 'complex', 'intricate', 'elaborate', 'sophisticated', 'refined', 'elegant', 'graceful', 'beautiful', 'handsome', 'pretty', 'ugly', 'hideous', 'grotesque', 'bizarre', 'weird', 'strange', 'odd', 'peculiar', 'unusual', 'uncommon', 'scarce', 'abundant', 'plentiful', 'copious', 'profuse', 'lavish', 'extravagant', 'luxurious', 'opulent', 'wealthy', 'rich', 'affluent', 'prosperous', 'thriving', 'flourishing', 'booming', 'successful', 'triumphant', 'victorious', 'defeated', 'beaten', 'conquered', 'subjugated', 'oppressed', 'repressed', 'suppressed', 'liberated', 'freed', 'emancipated', 'independent', 'autonomous', 'sovereign', 'dependent', 'reliant', 'subordinate', 'inferior', 'superior', 'excellent', 'outstanding', 'superb', 'magnificent', 'splendid', 'glorious', 'marvelous', 'wonderful', 'fantastic', 'fabulous', 'incredible', 'unbelievable', 'amazing', 'astonishing', 'astounding', 'surprising', 'shocking', 'startling', 'stunning', 'breathtaking', 'awe-inspiring', 'majestic', 'grand', 'imposing', 'monumental', 'colossal', 'gigantic', 'enormous', 'huge', 'vast', 'immense', 'massive'],
-            C2: ['ineffable', 'obfuscate', 'perspicacious', 'recalcitrant', 'sycophant', 'cacophony', 'mellifluous', 'serendipity', 'epiphany', 'quintessential', 'idiosyncrasy', 'anachronism', 'plethora', 'dearth', 'paucity', 'surfeit', 'glut', 'excess', 'abundance', 'scarcity', 'lack', 'deficiency', 'shortage', 'want', 'need', 'requirement', 'necessity', 'demand', 'supply', 'provision', 'allocation', 'distribution', 'dispensation', 'apportionment', 'allotment', 'share', 'portion', 'part', 'piece', 'fragment', 'fraction', 'segment', 'section', 'division', 'category', 'class', 'group', 'type', 'kind', 'sort', 'variety', 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom', 'domain', 'realm', 'sphere', 'area', 'field', 'domain', 'territory', 'region', 'zone', 'district', 'neighborhood', 'vicinity', 'proximity', 'distance', 'remoteness', 'isolation', 'separation', 'connection', 'link', 'bond', 'tie', 'attachment', 'affection', 'love', 'devotion', 'loyalty', 'fidelity', 'allegiance', 'treason', 'betrayal', 'perfidy', 'deceit', 'fraud', 'trickery', 'deception', 'illusion', 'delusion', 'hallucination', 'mirage', 'phantom', 'ghost', 'spirit', 'soul', 'mind', 'body']
-        };
+        const useStore = create(
+            persist(
+                (set, get) => ({
+                    user: null,
+                    settings: {
+                        dailyNewWords: 5,
+                        targetRepetitions: 5,
+                        nativeLanguage: 'tr',
+                        learningLanguage: 'en',
+                        level: 'A1',
+                        testSize: 10,
+                        darkMode: false,
+                        minFontSize: 4,
+                        maxFontSizeMobile: 48,
+                        maxFontSizeDesktop: 72,
+                        geminiApiKey: ''
+                    },
+                    progress: {},
+                    customWords: [],
+                    sessionWords: [],
+                    difficultSession: [],
+                    isUpdatingContent: false,
 
-        const useStore = create((set, get) => ({
-            user: null,
-            settings: {
-                dailyNewWords: 5,
-                targetRepetitions: 5,
-                nativeLanguage: 'tr',
-                learningLanguage: 'en',
-                level: 'A1',
-                testSize: 10,
-                darkMode: false,
-                minFontSize: 4,
-                maxFontSizeMobile: 48,
-                maxFontSizeDesktop: 72,
-                geminiApiKey: ''
-            },
-            progress: {},
-            customWords: [],
-            sessionWords: [],
-            difficultSession: [],
-            isUpdatingContent: false,
-
-            setUser: (user) => set({ user }),
-            updateSettings: (newSettings) => set((state) => ({
-                settings: { ...state.settings, ...newSettings }
-            })),
-            
-            toggleDifficult: (wordId) => set((state) => {
-                const wordProgress = state.progress[wordId] || { repetitions: 0, isLearned: false, isDifficult: false };
-                const newDifficultStatus = !wordProgress.isDifficult;
-                
-                return {
-                    progress: {
-                        ...state.progress,
-                        [wordId]: { ...wordProgress, isDifficult: newDifficultStatus }
-                    }
-                };
-            }),
-
-            addCustomWords: (newWords) => set((state) => ({
-                customWords: [...state.customWords, ...newWords]
-            })),
-
-            generateSession: async () => {
-                const { settings, progress, customWords } = get();
-                set({ isUpdatingContent: true });
-
-                try {
-                    // 1. Find available words already enriched in customWords
-                    let availableWords = [...customWords].filter(w => !progress[w.id]?.isLearned);
+                    setUser: (user) => set({ user }),
+                    updateSettings: (newSettings) => set((state) => ({
+                        settings: { ...state.settings, ...newSettings }
+                    })),
                     
-                    // 2. If we don't have enough, pull from SYSTEM_DICTIONARY and enrich
-                    if (availableWords.length < settings.dailyNewWords) {
-                        const neededCount = settings.dailyNewWords - availableWords.length;
-                        const levelPool = SYSTEM_DICTIONARY[settings.level] || SYSTEM_DICTIONARY['A1'];
+                    toggleDifficult: (wordId) => set((state) => {
+                        const wordProgress = state.progress[wordId] || { repetitions: 0, isLearned: false, isDifficult: false };
+                        const newDifficultStatus = !wordProgress.isDifficult;
                         
-                        // Find base words not yet in customWords
-                        const existingBaseWords = new Set(customWords.map(w => w.baseWord?.toLowerCase() || w.translations?.[settings.learningLanguage]?.toLowerCase()));
-                        const newBaseWords = levelPool.filter(w => !existingBaseWords.has(w.toLowerCase())).slice(0, neededCount);
-                        
-                        const newlyEnrichedWords = [];
-                        
-                        // Enrich new words (Mocking the AI call for speed if API key is missing, or calling AI if present)
-                        for (const baseWord of newBaseWords) {
-                            let enrichedData = null;
-                            if (settings.geminiApiKey) {
-                                enrichedData = await translateAndEnrichWord(baseWord, settings.learningLanguage, settings.nativeLanguage, settings.level, settings.geminiApiKey);
+                        return {
+                            progress: {
+                                ...state.progress,
+                                [wordId]: { ...wordProgress, isDifficult: newDifficultStatus }
                             }
-                            
-                            // Fallback / Mock data if AI fails or no key
-                            if (!enrichedData) {
-                                enrichedData = {
-                                    translations: { [settings.learningLanguage]: baseWord, [settings.nativeLanguage]: `[${baseWord} çevirisi]` },
-                                    pronunciation: `/${baseWord}/`,
-                                    type: 'noun',
-                                    sentences: {
-                                        present: { original: `I see a ${baseWord}.`, translated: `Bir ${baseWord} görüyorum.`, blank: `I see a _____.`, highlights: [baseWord] },
-                                        past: { original: `I saw a ${baseWord}.`, translated: `Bir ${baseWord} gördüm.`, blank: `I saw a _____.`, highlights: [baseWord] },
-                                        future: { original: `I will see a ${baseWord}.`, translated: `Bir ${baseWord} göreceğim.`, blank: `I will see a _____.`, highlights: [baseWord] }
-                                    }
-                                };
+                        };
+                    }),
+
+                    addCustomWords: (newWords) => set((state) => ({
+                        customWords: [...state.customWords, ...newWords]
+                    })),
+
+                    generateSession: () => {
+                        const { settings, progress, customWords } = get();
+                        // Simple logic for session generation
+                        // In a real app, this would be more complex
+                        const availableWords = [...customWords].filter(w => !progress[w.id]?.isLearned);
+                        set({ sessionWords: availableWords.slice(0, settings.dailyNewWords) });
+                    },
+
+                    generateDifficultSession: () => {
+                        const { progress, customWords } = get();
+                        const difficultWords = [...customWords].filter(w => progress[w.id]?.isDifficult);
+                        set({ difficultSession: difficultWords });
+                    },
+
+                    updateProgress: (wordId, learned) => set((state) => {
+                        const current = state.progress[wordId] || { repetitions: 0, isLearned: false, isDifficult: false };
+                        return {
+                            progress: {
+                                ...state.progress,
+                                [wordId]: { 
+                                    ...current, 
+                                    repetitions: learned ? state.settings.targetRepetitions : current.repetitions + 1,
+                                    isLearned: learned || (current.repetitions + 1 >= state.settings.targetRepetitions)
+                                }
                             }
+                        };
+                    }),
 
-                            newlyEnrichedWords.push({
-                                id: 'sys_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                                baseWord: baseWord,
-                                color: colors[Math.floor(Math.random() * colors.length)],
-                                ...enrichedData
-                            });
-                        }
-                        
-                        // Add newly enriched words to customWords
-                        if (newlyEnrichedWords.length > 0) {
-                            get().addCustomWords(newlyEnrichedWords);
-                            availableWords = [...availableWords, ...newlyEnrichedWords];
-                        }
-                    }
-
-                    set({ 
-                        sessionWords: availableWords.slice(0, settings.dailyNewWords),
-                        isUpdatingContent: false 
-                    });
-                } catch (error) {
-                    console.error("Session generation error:", error);
-                    set({ isUpdatingContent: false });
-                }
-            },
-
-            generateDifficultSession: () => {
-                const { progress, customWords } = get();
-                const difficultWords = [...customWords].filter(w => progress[w.id]?.isDifficult);
-                set({ difficultSession: difficultWords });
-            },
-
-            updateProgress: (wordId, learned) => set((state) => {
-                const current = state.progress[wordId] || { repetitions: 0, isLearned: false, isDifficult: false };
-                return {
-                    progress: {
-                        ...state.progress,
-                        [wordId]: { 
-                            ...current, 
-                            repetitions: learned ? state.settings.targetRepetitions : current.repetitions + 1,
-                            isLearned: learned || (current.repetitions + 1 >= state.settings.targetRepetitions)
-                        }
-                    }
-                };
-            }),
-
-            resetProgress: () => set({ progress: {}, customWords: [], sessionWords: [], difficultSession: [] }),
-        }));
-
-        // Custom Persist Implementation
-        try {
-            const savedState = localStorage.getItem('polyglot-learner-storage');
-            if (savedState) {
-                const parsed = JSON.parse(savedState);
-                useStore.setState((state) => ({ ...state, ...parsed }));
-            }
-        } catch (e) {
-            console.error("Failed to load state from localStorage", e);
-        }
-
-        useStore.subscribe((state) => {
-            try {
-                const stateToSave = { ...state };
-                delete stateToSave.isUpdatingContent; // Don't persist loading state
-                localStorage.setItem('polyglot-learner-storage', JSON.stringify(stateToSave));
-            } catch (e) {
-                console.error("Failed to save state to localStorage", e);
-            }
-        });
+                    resetProgress: () => set({ progress: {}, customWords: [], sessionWords: [], difficultSession: [] }),
+                }),
+                { name: 'polyglot-learner-storage' }
+            )
+        );
 
         // --- AI SERVICE ---
         const getAiClient = (apiKey) => {
@@ -939,7 +855,7 @@
         // --- PAGES ---
 
         const Home = () => {
-            const { user, settings, progress, customWords, generateSession, isUpdatingContent } = useStore();
+            const { user, settings, progress, customWords, generateSession } = useStore();
             const t = useTranslation(settings.nativeLanguage);
             const navigate = useNavigate();
 
@@ -978,11 +894,10 @@
                                     {settings.dailyNewWords} {t('words')} • {settings.targetRepetitions} {t('totalReps')}
                                 </p>
                                 <button 
-                                    onClick={async () => { await generateSession(); navigate('/session'); }}
-                                    disabled={isUpdatingContent}
+                                    onClick={() => { generateSession(); navigate('/session'); }}
                                     className="btn btn-light w-100 py-3 rounded-4xl font-black text-primary text-sm shadow-sm"
                                 >
-                                    {isUpdatingContent ? t('generating') : t('startTodaysSession')}
+                                    {t('startTodaysSession')}
                                 </button>
                             </div>
                         </div>
@@ -1471,7 +1386,6 @@
             const t = useTranslation(settings.nativeLanguage);
             const [localSettings, setLocalSettings] = useState(settings);
             const [isSaved, setIsSaved] = useState(false);
-            const [showConfirm, setShowConfirm] = useState(false);
 
             const handleSave = () => {
                 updateSettings(localSettings);
@@ -1555,20 +1469,13 @@
                             {isSaved ? t('autoSaved') : t('saveSettings')}
                         </button>
 
-                        {showConfirm ? (
-                            <div className="d-flex gap-2 w-100 mt-2">
-                                <button onClick={() => setShowConfirm(false)} className="btn btn-secondary flex-grow-1 py-3 rounded-4xl font-black">İptal</button>
-                                <button onClick={() => { resetProgress(); setShowConfirm(false); }} className="btn btn-danger flex-grow-1 py-3 rounded-4xl font-black">Eminim, Sil</button>
-                            </div>
-                        ) : (
-                            <button 
-                                onClick={() => setShowConfirm(true)}
-                                className="btn btn-link w-100 py-3 text-danger font-black text-decoration-none d-flex align-items-center justify-content-center gap-2 mt-2"
-                            >
-                                <Trash2 size={18} />
-                                {t('resetProgress')}
-                            </button>
-                        )}
+                        <button 
+                            onClick={() => { if(confirm(t('confirmDeleteAll'))) resetProgress(); }}
+                            className="btn btn-link w-100 py-3 text-danger font-black text-decoration-none d-flex align-items-center justify-content-center gap-2"
+                        >
+                            <Trash2 size={18} />
+                            {t('resetProgress')}
+                        </button>
 
                         <button 
                             onClick={handleExport}
