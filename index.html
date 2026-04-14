@@ -200,11 +200,7 @@
     <script src="https://unpkg.com/framer-motion@10.12.16/dist/framer-motion.js"></script>
     
     <!-- State Management -->
-    <script src="https://unpkg.com/zustand@4.3.8/umd/index.production.js"></script>
-    <script>
-        // Normalize Zustand global (it attaches to window.zustand)
-        window.zustandStore = window.zustand;
-    </script>
+    <script src="https://unpkg.com/zustand@4.3.8/umd/vanilla.production.js"></script>
     
     <!-- Google GenAI (Browser Bundle) -->
     <script src="https://cdn.jsdelivr.net/npm/@google/genai@0.2.1/dist/index.min.js"></script>
@@ -252,10 +248,31 @@
             ExternalLink, Heart, Clock, GraduationCap, ArrowRight, Download
         } = window.LucideReact || window.lucideReact;
         const { motion, AnimatePresence } = Motion;
-        // Zustand UMD exports 'create' as a named property. 
-        // In some versions, it's directly on the object, in others it's nested.
-        const zustandLib = window.zustand;
-        const create = zustandLib.create || (zustandLib.default && zustandLib.default.create) || zustandLib;
+        
+        // Custom Zustand-like 'create' using zustand/vanilla
+        // This avoids complex UMD dependency issues with use-sync-external-store
+        const create = (config) => {
+            const store = window.zustandVanilla.createStore(config);
+            const useStore = (selector = (state) => state) => {
+                const [state, setState] = useState(() => selector(store.getState()));
+                const selectorRef = useRef(selector);
+                
+                useEffect(() => {
+                    selectorRef.current = selector;
+                });
+
+                useEffect(() => {
+                    return store.subscribe((newState) => {
+                        const nextState = selectorRef.current(newState);
+                        setState(nextState);
+                    });
+                }, []);
+
+                return state;
+            };
+            Object.assign(useStore, store);
+            return useStore;
+        };
         
         // Google GenAI Global fallback or Fetch-based implementation
         let GoogleGenAI = window.googleGenAI ? window.googleGenAI.GoogleGenAI : null;
