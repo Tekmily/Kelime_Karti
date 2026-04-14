@@ -252,9 +252,9 @@
             ExternalLink, Heart, Clock, GraduationCap, ArrowRight, Download
         } = window.LucideReact || window.lucideReact;
         const { motion, AnimatePresence } = Motion;
-        // Zustand UMD exports 'create' as a named property or default
-        const zustandModule = window.zustandStore || window.zustand;
-        const create = zustandModule.create || zustandModule.default || zustandModule;
+        // Zustand UMD exports 'create' as a named property. 
+        // In UMD, it attaches to window.zustand.
+        const create = window.zustand.create;
         
         // Google GenAI Global fallback or Fetch-based implementation
         let GoogleGenAI = window.googleGenAI ? window.googleGenAI.GoogleGenAI : null;
