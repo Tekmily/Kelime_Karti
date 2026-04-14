@@ -253,8 +253,9 @@
         } = window.LucideReact || window.lucideReact;
         const { motion, AnimatePresence } = Motion;
         // Zustand UMD exports 'create' as a named property. 
-        // In UMD, it attaches to window.zustand.
-        const create = window.zustand.create;
+        // In some versions, it's directly on the object, in others it's nested.
+        const zustandLib = window.zustand;
+        const create = zustandLib.create || (zustandLib.default && zustandLib.default.create) || zustandLib;
         
         // Google GenAI Global fallback or Fetch-based implementation
         let GoogleGenAI = window.googleGenAI ? window.googleGenAI.GoogleGenAI : null;
