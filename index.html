@@ -190,12 +190,21 @@
     
     <!-- Icons and Animations -->
     <script src="https://unpkg.com/lucide@0.292.0"></script>
-    <script>window.react = window.React; // Fix for lucide-react UMD expecting lowercase react global</script>
+    <script>
+        // Ensure React is available globally for UMD modules
+        window.react = window.React;
+        // Helper to safely get global modules
+        window.getGlobal = (name) => window[name] || (window[name.charAt(0).toUpperCase() + name.slice(1)]);
+    </script>
     <script src="https://unpkg.com/lucide-react@0.292.0/dist/umd/lucide-react.min.js"></script>
     <script src="https://unpkg.com/framer-motion@10.12.16/dist/framer-motion.js"></script>
     
     <!-- State Management -->
     <script src="https://cdn.jsdelivr.net/npm/zustand@4.3.8/umd/index.js"></script>
+    <script>
+        // Normalize Zustand global
+        window.zustandStore = window.zustand;
+    </script>
     
     <!-- Google GenAI (Browser Bundle) -->
     <script src="https://cdn.jsdelivr.net/npm/@google/genai@0.2.1/dist/index.min.js"></script>
@@ -241,9 +250,9 @@
             RotateCcw, Trash2, Save, Moon, Sun, Languages,
             Trophy, Star, History, Search, Info, Share2,
             ExternalLink, Heart, Clock, GraduationCap, ArrowRight, Download
-        } = window.LucideReact;
+        } = window.LucideReact || window.lucideReact;
         const { motion, AnimatePresence } = Motion;
-        const { create } = window.zustand;
+        const { create } = window.zustandStore || window.zustand;
         
         // Google GenAI Global fallback or Fetch-based implementation
         let GoogleGenAI = window.googleGenAI ? window.googleGenAI.GoogleGenAI : null;
