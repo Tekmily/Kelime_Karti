@@ -200,9 +200,9 @@
     <script src="https://unpkg.com/framer-motion@10.12.16/dist/framer-motion.js"></script>
     
     <!-- State Management -->
-    <script src="https://cdn.jsdelivr.net/npm/zustand@4.3.8/umd/index.js"></script>
+    <script src="https://unpkg.com/zustand@4.3.8/umd/index.production.js"></script>
     <script>
-        // Normalize Zustand global
+        // Normalize Zustand global (it attaches to window.zustand)
         window.zustandStore = window.zustand;
     </script>
     
