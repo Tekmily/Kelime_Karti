@@ -185,9 +185,18 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/history@5/umd/history.production.min.js"></script>
-    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.production.min.js"></script>
-    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@remix-run/router@1.15.3/dist/router.umd.js"></script>
+    <script>
+        // Ensure RemixRouter is available for React Router v6 UMD
+        window.RemixRouter = window.RemixRouter || window.router;
+    </script>
+    <script src="https://unpkg.com/react-router@6.22.3/dist/umd/react-router.production.min.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.22.3/dist/umd/react-router-dom.production.min.js"></script>
+    <script>
+        // Ensure ReactRouter and ReactRouterDOM are correctly mapped
+        window.ReactRouter = window.ReactRouter || window.reactRouter;
+        window.ReactRouterDOM = window.ReactRouterDOM || window.reactRouterDom;
+    </script>
     
     <!-- Icons and Animations -->
     <script src="https://unpkg.com/lucide@0.292.0"></script>
